@@ -18,52 +18,89 @@
 </head>
 
 <body>
-  <div class="main_wrap">
-    <div class="header">
-      <a href="#" class="logo"><img src="images/logo.png" alt="" /></a>
-      <div class="copyright">
-        CopyRight © 2019 深圳百秀信息技术股份有限公司<br />All Rights Reserved
+    <div class="main_wrap">
+        <div class="header">
+          <a href="#" class="logo"><img src="images/logo.png" alt="" /></a>
+          <div class="copyright">
+            CopyRight © 2019 深圳百秀信息技术股份有限公司<br />All Rights Reserved
+          </div>
+        </div>
+    
+        <div class="login_form_con">
+          <div class="login_title"></div>
+          <form class="login_form">
+            <i class="iconfont icon-user"></i>
+            <i class="iconfont icon-key"></i>
+            <input type="text" class="input_txt" placeholder="邮箱/手机号" />
+            <input type="password" class="input_pass" placeholder="密码" />
+            <input type="submit" class="input_sub" value="登 录" />
+          </form>
+        </div>
       </div>
-    </div>
-
-    <div class="login_form_con">
-      <div class="login_title"></div>
-      <form class="login_form">
-        <i class="iconfont icon-user"></i>
-        <i class="iconfont icon-key"></i>
-        <input type="text" class="input_txt" placeholder="邮箱/手机号" />
-        <input type="password" class="input_pass" placeholder="密码" />
-        <input type="submit" class="input_sub" value="登 录" />
-      </form>
-    </div>
-  </div>
-
-  <!-- 模态框 -->
-  <div id="myModal" class="modal fade" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-              aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title">友情提示</h4>
+    
+    
+      <!-- 使用bootstrap中的模态框用来提示用户 -->
+      <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                  aria-hidden="true">&times;</span></button>
+              <h4 class="modal-title" id="myModalLabel">温馨提示</h4>
+            </div>
+            <div class="modal-body">
+    
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-success" data-dismiss="modal">确定</button>
+    
+            </div>
+          </div>
         </div>
-        <div class="modal-body">
-          <p></p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-primary" data-dismiss="modal">确认</button>
-        </div>
-      </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
-  </div><!-- /.modal -->
-  
-  <!-- 服务器接口地址 -->
-  <script src="./libs/http.js"></script>
-  <script src="./js/login.js"></script>
-
-  <script>
-    $('')
-  </script>
+      </div>
 </body>
-
+<!-- 服务器接口地址 -->
+<script src="./libs/http.js"></script>
+<script>
+  // 入口函数
+  $(function () {
+    // 给登录按钮注册一个点击事件
+    $('.input_sub').on('click', function (e) {
+      // 登录按钮是一个form表单中submit，所以演去掉他的默认跳转
+      e.preventDefault();
+      //  获取用户名
+      let userName = $('.input_txt').val().trim();
+      // 获取密码
+      let userpassword = $('.input_pass').val().trim();
+      // 判断非空
+      if (userName === '' || userpassword === '') {
+        // 提示用户没有写密码账号
+        $('.modal-body').text('你特么没长脑子啊，空提交');
+        $('#myModal').modal();
+        return;
+      }
+      // 发送ajax请求
+      $.ajax({
+        type: 'post',
+        url: window.BigNew.user_login,
+        data: {
+          username: userName,
+          password: userpassword
+        },
+        success: function (res) {
+          $('.modal-body').text(res.msg);
+          $('#myModal').modal();
+          if (res.code === 200) {
+            window.localStorage.setItem('token', res.token);
+            // 登录成功 本地存储
+            $('#myModal').on('hedden.bs.modal', function (e) {
+              //  跳转首页
+              window.location.href = './index.html'
+            })
+          }
+        }
+      })
+    })
+  })
+</script>
 </html>
