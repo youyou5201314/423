@@ -93,7 +93,7 @@
           if (res.code === 200) {
             window.localStorage.setItem('token', res.token);
             // 登录成功 本地存储
-            $('#myModal').on('hedden.bs.modal', function (e) {
+            $('#myModal').on('hidden.bs.modal', function (e) {
               //  跳转首页
               window.location.href = './index.html'
             })
