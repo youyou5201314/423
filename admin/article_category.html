@@ -97,4 +97,128 @@
         </tr>
     {{/each}}
 </script>
+<script>
+    // 入口函数
+    $(function () {
+        // 发送ajax请求
+        getData();
+        function getData() {
+            $.get({
+                url: BigNew.category_list,
+                success: function (res) {
+                    let htmlStr = template('categoryList', res);
+                    $('tbody').html(htmlStr);
+                }
+            })
+        }
+        // 当点击取消按钮的时候，将表单中的数据全部重置
+        $('#btn-cancel').on('click', function () {
+            $('form')[0].reset();
+        })
+        // 当模态框在显示的时候，我们需要知道哪一个按钮被点击了
+        $('#myModal').on('show.bs.modal', function (e) {
+            //使用e.relatedTarget获取触发模态框显示的dom元素
+            let dom = e.relatedTarget;
+            // 判断到底是谁触发了这个模态框显示
+            if (dom === $('#xinzengfenlei')[0]) {
+                $('exampleModalLabel').text('新增文章分类');
+                $('#btn-confirm').text('新增').addClass('btn-success').removeClass('btn-primary');
+                // 将表单中的数据全部重置，而reset（）重置这个方法是原生对象的
+                $('form')[0].reset();
+                $('#btn-confirm').on('click', function () {
+                    // 获取文章分类和文章分类名
+                    let name = $('#recipient-name').val();
+                    let slug = $('#message-text').val();
+                    // 判断非空
+                    if (name === '' || slug === '') {
+                        alert('请填写数据');
+                        return;
+                    }
+                    // 发送请求
+                    $.post({
+                        url: BigNew.category_add,
+                        data: {
+                            name: name,
+                            slug: slug,
+                        },
+                        success: function (res) {
+                            // 判断
+                            if (res.code === 201) {
+                                $('#myModal'), modal('heide')
+                                getData();
+                            }
+                        }
+                    })
+                })
+            } else {
+                $('#exampleModalLabel').text('编辑文章分类');
+                $('#btn-confirm').text('编辑').addClass('btn-primary').removeClass('btn-success');
+                // 当弹出编辑的模态框的时候，需要得到一个文章类别ID，根据这个id 发送ajax请求
+                let cateId = $(dom).attr('data-id');
+                // console.log(cateId);
+                $.get({
+                    url: BigNew.category_search,
+                    data: {
+                        id: cateId,
+                    },
+                    success: function (res) {
+                        // 判断
+                        if (res.code === 200) {
+                            $('#recipient-name').val(res, data[0].name);
+                            $('#message-text').val(res.data[0].slug);
+                            $('#cateid').val(res.data[0].id);
+                        }
+                    }
+                })
+                // 注册点击事件
+                $('#btn-confirm').on('click', function () {
+                    // 获取文章分类名称和别名
+                    let name = $('#recipient-name').val();
+                    let slug = $('#message-text').val();
+                    let id = $('#cateid').val();
+                    // 发送请求
+                    $.post({
+                        url: BigNew.category_edit,
+                        data: {
+                            name: name,
+                            slug: slug,
+                            id: id,
+                        },
+                        success: function (res) {
+                            // 判断
+                            if (res, code === 200) {
+                                $('#myModal').modal('hide');
+                                getData();
+                            }
+                        }
+                    })
+                })
+            }
+        })
+        // 给删除注册一个点击事件
+        // 因为这个删除是动态生成的，我们不能直接给他注册点击事件，需要委托
+        $('tbody').on('click', '#btn-delete', function () {
+            // 获取我们自定义的id元素
+            let deleteId = $(this).attr('data-id');
+            let ans = confirm('你确定要删除吗？');
+            // 判断
+            if (ans) {
+                // 发送请求
+                $.post({
+                    url: BigNew.category_delete,
+                    data: {
+                        id: deleteId,
+                    },
+                    success: function (res) {
+                        // 判断
+                        if (res.code === 200) {
+                            getData();
+                        }
+                    }
+                })
+            }
+        })
+    })
+</script>
+
 </html>
