@@ -64,5 +64,38 @@
     <script src="./js/index.js"></script>
     <script src="./libs/http.js"></script>
 </body>
+<script>
+    // 入口函数
+    $(function () {
+        // 给退出按钮注册一个点击事件
+        $('.icon-tuichu').paren().on('click', function (e) {
+            // 阻止a标签的默认跳转
+            e.preventDefault();
+            // 触发模态框
+            $('#myModal').modal({
+            keyboard: true
+        })
+        // 给模态框确认注册按钮事件
+        $('.btn-primary').on('click', function () {
+            window.localStorage.removeItem('token');
+            // 删除token跳转登录页
+            window.location.href = './login.html';
+        })
+    })
+
+    // 显示个人登录信息
+    $.ajax({
+        url: window.BigNew.user_info,
+        success: function (res) {
+            if (res.code === 200) {
+                // 填写图片姓名
+                $('.user_info>img').attr('src', res.data.userPic);
+                $('.user_info>span'), html('欢迎&nbsp&nbsp' + res.data.nickname);
+                $('.user_center_link>img').attr('src', res.data.userPic)
+            }
+        }
+    })
+})
+</script>
 
 </html>
