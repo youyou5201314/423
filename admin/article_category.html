@@ -145,8 +145,7 @@
                             // 判断
                             if (res.code === 201) {
                                 // console.log(res);
-                                
-                                $('#myModal'), modal('heide')
+                                $('#myModal').modal('heide')
                                 getData();
                             }
                         }
@@ -166,7 +165,7 @@
                     success: function (res) {
                         // 判断
                         if (res.code === 200) {
-                            $('#recipient-name').val(res, data[0].name);
+                            $('#recipient-name').val(res.data[0].name);
                             $('#message-text').val(res.data[0].slug);
                             $('#cateid').val(res.data[0].id);
                         }
@@ -188,7 +187,7 @@
                         },
                         success: function (res) {
                             // 判断
-                            if (res, code === 200) {
+                            if (res.code === 200) {
                                 $('#myModal').modal('hide');
                                 getData();
                             }
