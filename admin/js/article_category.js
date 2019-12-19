@@ -1,138 +1,135 @@
-//入口函数
 $(function () {
-    //1.页面一加载发送ajax请求数据
-    $.ajax({
-        url: BigNew.category_list,
-        type: 'get',
-        dataType: 'json',
-        success: function (backData) {
-            console.log(backData);
-            //模板引擎渲染页面 
-            $('.category_table>tbody').html(template('art_cat', backData));
-        }
-    });
-
-    /*技术难点 
-    1.点击新增按钮与编辑按钮都要弹出模态框
-    2.新增按钮的业务逻辑与编辑按钮业务逻辑不同
-        新增按钮弹出的模态框
-            (1)表单文本清空
-            (2)点击取消，清空表单文本方便下一次添加
-            (3)点击新增：ajax发送请求给服务器
-                url:/admin/category/add
-                参数： name : 分类名称  slug:分类别名
-        编辑按钮弹出的模态框
-            (1)表单文本为当前点击编辑的文字类别数据
-            (2)点击取消：清空表单文本方便下一次编辑
-            (3)点击编辑：ajax发送请求给服务器
-                url:/admin/category/edit
-                参数：name : 分类名称  slug:分类别名 id:编辑的文字id
-    
-    解决方案：结合bootstrap官方文档模态框使用
-    1.给新增按钮与编辑按钮a标签设置行内属性：data-toggle="modal" data-target="#myModal"
-        作用：点击a标签自动弹出模态框
-    2.给模态框注册事件 $('#myModal').on('show.bs.modal', function (e) {})
-        作用：弹出模态框之前会执行这个事件处理函数
-        e.relatedTarget : 获取弹出模态框的事件触发源（点击哪个a弹出来的）
-    3.给模态框的取消按钮和确认按钮注册事件
-        取消按钮：隐藏模态框，并且清空表单文本： dom表单.reset()
-        确认按钮：
-            如果e.relatedTarget是新增 ->则执行新增按钮逻辑
-            如果e.relatedTarget是编辑 ->则执行编辑按钮逻辑
-    */
-
-    //1.模态框出现之前
-    $('#myModal').on('show.bs.modal', function (e) {
-        // do something...
-        //获取模态框事件触发源
-        var target = e.relatedTarget;
-        if (target == $('#xinzengfenlei')[0]) {
-            //执行新增分类逻辑
-            //(1)设置按钮文本为新增
-            $('#myModal .confirm').text('新增');
-        } else {
-            //执行编辑分类逻辑
-            //(1)设置按钮文本为编辑
-            $('#myModal .confirm').text('编辑');
-            //(2)取出当前按钮所在的tr的name值赋值给模态框的表单
-            $('#recipient-name').val($(target).parent().prev().prev().text());
-            //(3)取出当前按钮所在的tr的slug值赋值给模态框的表单
-            $('#message-text').val($(target).parent().prev().text());
-            //(2)将当前按钮的自定义属性data-id赋值给模态框编辑按钮的自定义属性data-id
-            $('#myModal .confirm').attr('data-id', $(target).attr('data-id'));
-        }
-    });
-
-    //2.取消按钮点击事件
-    $('#myModal .cancel').on('click', function (e) {
-        // do something...
-        //清空文本框数据 ：这是DOM原生的方法
-        $('#form')[0].reset();
-        //隐藏模态框
-        $('#myModal').modal('hide')
-    });
-
-    //3.确认按钮点击事件
-    $('#myModal .confirm').on('click', function (e, a) {
-        // do something...
-        if ($(this).text() == '新增') {
-            $.ajax({
-                url: BigNew.category_add,
-                type: 'post',
-                dataType: 'json',
-                data: {
-                    name: $('#recipient-name').val(),
-                    slug: $('#message-text').val(),
-                },
-                success: function (backData) {
-                    if (backData.code == 201) {
-                        alert('新增成功');
-                        window.location.reload();
-                    } else {
-                        alert(backData.msg);
-                    };
-                }
-            });
-        } else {//编辑
-            $.ajax({
-                url: BigNew.category_edit,
-                type: 'post',
-                dataType: 'json',
-                data: {
-                    name: $('#recipient-name').val(),
-                    slug: $('#message-text').val(),
-                    id: $(this).attr('data-id')
-                },
-                success: function (backData) {
-                    if (backData.code == 200) {
-                        alert('编辑成功');
-                        window.location.reload();
-                    } else {
-                        alert(backData.msg);
-                    };
-                }
-            });
-        }
-    });
-
-    //4.删除按钮 ：这个按钮是动态添加的，所以需要注册委托事件
-    //注意点：注册委托事件的父元素不能是动态添加的，否则无法委托
-    $('.category_table>tbody').on('click', '.delete', function () {
-        $.ajax({
-            url: BigNew.category_delete,
-            type: 'post',
-            dataType: 'json',
-            data: {
-                id: $(this).attr('data-id')
-            },
-            success: function (backData) {
-                if (backData.code == 204) {
-                    alert('删除成功');
-                    window.location.reload();
-                } else {
-                    alert(backData.msg);
-                };
+    //发送ajax请求
+    getData();
+    function getData() {
+        $.get({
+            url: BigNew.category_list,
+            success: function (res) {
+                // console.log(res);
+                let htmlStr = template('categoryList', res);
+                // console.log(htmlStr);
+                $('tbody').html(htmlStr);
             }
-        });
-    });
-});
+        })
+    }
+
+    //当点击取消按钮的时候，将表单中的数据全部重置
+    $('#btn-cancel').on('click', function () {
+        $('form')[0].reset();
+    })
+
+
+    //当模态框在显示的时候，我们需要知道是哪一个按钮被点击了
+    $('#myModal').on('show.bs.modal', function (e) {
+        //e.relatedTarget获取到的就是触发这个模态框显示的dom元素
+        let dom = e.relatedTarget;
+
+        //判断到底是谁触发了这个模态框显示
+        if (dom == $('#xinzengfenlei')[0]) {
+            $('#exampleModalLabel').text('新增文章分类')
+            $('#btn-confirm').text('新增').addClass('btn-success').removeClass('btn-primary');
+            //将表单中的数据全部重置，而reset()重置这个方法是原生对象的。
+            $('form')[0].reset();
+            $('#btn-confirm').on('click', function () {
+                let name = $('#recipient-name').val()
+                let slug = $('#message-text').val()
+                if (name == '' || slug == '') {
+                    alert('请填写数据')
+                    return;
+                }
+                $.post({
+                    url: BigNew.category_add,
+                    data: {
+                        name: name,
+                        slug: slug
+                    },
+                    success: function (res) {
+                        if (res.code == 201) {
+                            $('#myModal').modal('hide')
+                            getData();
+                        }
+                    }
+                })
+            })
+
+        } else {
+            $('#exampleModalLabel').text('编辑文章分类')
+            $('#btn-confirm').text('编辑').addClass('btn-primary').removeClass('btn-success');
+            //当弹出编辑的模态框的时候，需要得到一个文章类别id，根据这个id，发送ajax请求获得具体的文章类别信息
+            let cateId = $(dom).attr('data-id');
+            // console.log(cateId);
+            $.get({
+                url: BigNew.category_search,
+                data: {
+                    id: cateId
+                },
+                success: function (res) {
+                    console.log(res);
+                    if (res.code == 200) {
+                        $('#recipient-name').val(res.data[0].name)
+                        $('#message-text').val(res.data[0].slug)
+                        $('#cateid').val(res.data[0].id)
+                    }
+                }
+            })
+            $('#btn-confirm').on('click', function () {
+                let name = $('#recipient-name').val()
+                let slug = $('#message-text').val()
+                let id = $('#cateid').val()
+                $.post({
+                    url: BigNew.category_edit,
+                    data: {
+                        id: id,
+                        name: name,
+                        slug: slug
+                    },
+                    success: function (res) {
+                        // console.log(res);
+                        if (res.code == 200) {
+                            $('#myModal').modal('hide')
+                            getData();
+                        }
+                    }
+                })
+            })
+
+        }
+
+        // 任务： 只对btn-confirm注册一次点击事件，然后判断是新增还是编辑，然后做对应的处理？？？
+
+
+
+
+
+
+    })
+
+
+
+    //给删除注册一个点击事件
+    // 因为这个删除是动态生成的，我们不能直接给他注册点击事件，需要使用委托
+
+    $('tbody').on('click', '#btn-delete', function () {
+        let deleteId = $(this).attr('data-id');
+        // console.log(deleteId);
+        let ans = confirm('你确定要删除吗？');
+        // console.log(ans);
+        if (ans) {
+            $.post({
+                url: BigNew.category_delete,
+                data: {
+                    id: deleteId
+                },
+                success: function (res) {
+                    if(res.code == 204) {
+                        getData();
+                    }
+                }
+            })
+        }
+    })
+
+
+
+})
+

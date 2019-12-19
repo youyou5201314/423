@@ -1,57 +1,74 @@
-//入口函数
 $(function () {
-    //1.页面一加载：ajax请求个人详情信息，渲染页面
-    $.ajax({
+    //发送ajax请求获取到用户数据
+    $.get({
         url: BigNew.user_detail,
-        type: 'get',
-        dataType: 'json',
-        success: function (backData) {
-            console.log(backData);
-            //渲染页面
-            // $('input.username').val(backData.data.username);
-            // $('input.nickname').val(backData.data.nickname);
-            // $('input.email').val(backData.data.email);
-            // $('input.password').val(backData.data.password);
-            //遍历对象优化代码
-            for (var key in backData.data) {
-                $('input.' + key).val(backData.data[key]);
+        success: function (res) {
+            // console.log(res);
+            // $('input.username').val(res.data.username);
+            // $('input.nickname').val(res.data.nickname);
+            // $('input.email').val(res.data.email);
+            // $('input.password').val(res.data.password)
+            for (var key in res.data) {
+                $('input.' + key).val(res.data[key]);
+                // console.log(key+"-------------"+res.data[key]);
             }
-            $('img.user_pic').attr('src', backData.data.userPic);
+            $('img.user_pic').attr('src', res.data.userPic);
         }
-    });
-    //2.文件预览
-    //1.给file表单元素注册onchange事件
-    $('#exampleInputFile').change(function () {
-        //1.2 获取用户选择的图片
-        var file = this.files[0];
-        //1.3 将文件转为src路径
-        var url = URL.createObjectURL(file);
-        //1.4 将url路径赋值给img标签的src
-        $('.user_pic').attr('src', url);
-    });
+    })
 
-    //3.编辑个人信息(fromdata上传文件)
-    $('#form').on('submit', function (e) {
-        //禁用表单默认提交事件
+    //给文件域注册一个change事件，当选择图片之后，在图片标签中展示我们 选择的图片
+    //用来处理用户选择图片的时候，有一个预览效果
+    $('#exampleInputFile').on('change', function (e) {
+        // console.log('文件域选择了文件');
+        // console.log(this);
+        // console.dir(this.files[0]);
+        //图片对象
+        let imgFile = this.files[0];
+        let url = URL.createObjectURL(imgFile);
+        // console.log(url);
+        $('img.user_pic').attr('src', url);
+    })
+
+    //修改按钮注册点击事件
+    $('.btn-edit').on('click', function (e) {
+        //阻止默认行为
         e.preventDefault();
+
+        //获取表单数据
+        var form = $('#form')[0];
+        var userdata = new FormData(form);
+        // console.log(data);
+        //发送ajax请求
         $.ajax({
-            url: BigNew.user_edit,
             type: 'post',
-            dataType: 'json',
-            data: new FormData(this),
-            contentType: false,
+            url: BigNew.user_edit,
+            data: userdata,
+            //阻止编译
             processData: false,
-            success: function (backData) {
-                console.log(backData);
-                if (backData.code == 200) {
-                    alert('修改成功');
-                    /* 
-                    window:            当前页面窗口 user.html
-                    window.parent:     当前页面父窗口 index.html
-                    */
-                    parent.window.location.reload();
+            //不需要设置请求的类型
+            contentType: false,
+            success: function (res) {
+                // console.log(res);
+                if (res.code == 200) {
+                    //刷新一下当前这样用户页面
+                    // window.location.reload();
+                    //在子页面刷新父页面
+                    // parent.window.location.reload();
+
+                    $.ajax({
+                        type: 'get',
+                        url: window.BigNew.user_info,
+                        success: function (res) {
+                            console.log(res);
+                            //获取服务器返回的数据，使用这些数据去渲染页面的内容
+                            parent.$('.user_info img').attr('src', res.data.userPic);
+                            parent.$('.user_info span').html('欢迎&nbsp;&nbsp;' + res.data.nickname + '');
+                            parent.$('.user_center_link>img').attr('src', res.data.userPic);
+                        }
+                    })
                 }
             }
-        });
-    });
-});
+        })
+    })
+
+})

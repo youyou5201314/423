@@ -1,5 +1,5 @@
-/* 沙箱模式 */
-(function(w){
+//利用沙箱模式
+;(function(w) {
     var baseURL = 'http://localhost:8080/api/v1'
     var BigNew = {
         baseURL:baseURL,//基地址
@@ -25,4 +25,4 @@
 
     //暴露接口
     w.BigNew = BigNew;
-})(window);
+})(window)

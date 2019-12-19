@@ -68,65 +68,86 @@
             </form>
         </div>
     </div>
+
+    <script src="./libs/http.js"></script>
+    <script src="./js/user.js"></script>
+    <!-- <script>
+
+        $(function () {
+            //发送ajax请求获取到用户数据
+            $.get({
+                url: BigNew.user_detail,
+                success: function (res) {
+                    // console.log(res);
+                    // $('input.username').val(res.data.username);
+                    // $('input.nickname').val(res.data.nickname);
+                    // $('input.email').val(res.data.email);
+                    // $('input.password').val(res.data.password)
+                    for (var key in res.data) {
+                        $('input.' + key).val(res.data[key]);
+                        // console.log(key+"-------------"+res.data[key]);
+                    }
+                    $('img.user_pic').attr('src', res.data.userPic);
+                }
+            })
+
+            //给文件域注册一个change事件，当选择图片之后，在图片标签中展示我们 选择的图片
+            //用来处理用户选择图片的时候，有一个预览效果
+            $('#exampleInputFile').on('change', function (e) {
+                // console.log('文件域选择了文件');
+                // console.log(this);
+                // console.dir(this.files[0]);
+                //图片对象
+                let imgFile = this.files[0];
+                let url = URL.createObjectURL(imgFile);
+                // console.log(url);
+                $('img.user_pic').attr('src', url);
+            })
+
+            //修改按钮注册点击事件
+            $('.btn-edit').on('click', function (e) {
+                //阻止默认行为
+                e.preventDefault();
+
+                //获取表单数据
+                var form = $('#form')[0];
+                var userdata = new FormData(form);
+                // console.log(data);
+                //发送ajax请求
+                $.ajax({
+                    type: 'post',
+                    url: BigNew.user_edit,
+                    data: userdata,
+                    //阻止编译
+                    processData: false,
+                    //不需要设置请求的类型
+                    contentType: false,
+                    success: function (res) {
+                        // console.log(res);
+                        if (res.code == 200) {
+                            //刷新一下当前这样用户页面
+                            // window.location.reload();
+                            //在子页面刷新父页面
+                            // parent.window.location.reload();
+
+                            $.ajax({
+                                type: 'get',
+                                url: window.BigNew.user_info,
+                                success: function (res) {
+                                    console.log(res);
+                                    //获取服务器返回的数据，使用这些数据去渲染页面的内容
+                                    parent.$('.user_info img').attr('src', res.data.userPic);
+                                    parent.$('.user_info span').html('欢迎&nbsp;&nbsp;' + res.data.nickname + '');
+                                    parent.$('.user_center_link>img').attr('src', res.data.userPic);
+                                }
+                            })
+                        }
+                    }
+                })
+            })
+
+        })
+    </script> -->
 </body>
 
-<script src="./libs/http.js"></script>
-<!-- <script src="./js/user.js"></script> -->
-<script>
-// 入口函数
-$(function(){
-    // 发送ajax请求获取数据
-    $.get({
-        url: BigNew.user_detail,
-        success:function(res){
-            for(var key in res.data){
-                $('input' + key).val(res.data[key]);
-            }
-            $('img.user_pic').attr('src',res.data.userpic);
-        }
-    })
-// 给文件域注册一个change事件 当选择图片之后 在图片标签中展示我们选择的图片
-// 用来处理用户选择图片的时候，有一个预览效果
-$('#exampleInputFile').on('change',function(e){
-    // 图片对象
-    let imges=this.files[0];
-    let url=URL.createObjectURL(imges);
-    $('img.user_pic').attr('src',url);
-})
-// 给按钮注册点击事件
-$('.btn-edit').on('click',function(e){
-// 阻止默认跳转
-e.preventDefault();
-// 获取表单
-let form=$('#form')[0];
-let data=new FormData(form);
-// console.log(data);
-// 发送请求
-$.ajax({
-    url:BigNew.user_edit,
-   type:'post',
-   data:data,
-//    阻止编译
-   processData:false,
-//    不需要设置请求的类型
-contentType:false,
-success:function(res){
-    if(res.code===200){
-        // 刷新父页面
-        $.ajax({
-            url: BigNew.user_info,
-            type:'get',
-            success:function(res){
-                // 获取服务器返回的数据，将这些数据渲染到页面去
-                parent.$('.user_info img').attr('src',res.data.userpic);
-                parent.$('.user_info span').html('混应&nbsp&nbsp'+res.data.nickname);
-                parent.$('.user_center_link>img').attr('src',res.data.userpic)
-            }
-        })
-    }
-}
-})
-})
-})
-</script>
 </html>
